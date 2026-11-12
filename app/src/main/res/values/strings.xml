@@ -1,5 +1,5 @@
 <resources>
-    <string name="accessibility_service_description">Sideload experiment: keeps shake detection active to toggle the flashlight. It does not read screen content.</string>
+    <string name="accessibility_service_description">Keeps shake detection active to toggle the flashlight. It does not read screen content.</string>
     <string name="grant_camera_permission">Grant camera permission</string>
     <string name="grant_accessibility_permission">Give accessibility permission</string>
     <string name="manage_accessibility_permission">Manage accessibility permission</string>

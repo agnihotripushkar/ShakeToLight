@@ -17,17 +17,6 @@ android {
 
     buildFeatures {
         compose = true
-        buildConfig = true
-    }
-
-    flavorDimensions += "distribution"
-    productFlavors {
-        create("play") { dimension = "distribution" }
-        create("sideload") {
-            dimension = "distribution"
-            applicationIdSuffix = ".sideload"
-            versionNameSuffix = "-sideload"
-        }
     }
 
     compileOptions {

@@ -11,7 +11,7 @@ import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
 import kotlin.math.sqrt
 
-/** Local sideload experiment only. This service does not inspect accessibility events or window content. */
+/** Shake detection service using motion sensor. This service does not inspect accessibility events or window content. */
 class ShakeAccessibilityService : AccessibilityService(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private lateinit var cameraManager: CameraManager
