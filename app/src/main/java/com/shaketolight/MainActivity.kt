@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
@@ -33,7 +35,18 @@ internal const val PREF_ENABLED = "enabled"
 class MainActivity : ComponentActivity() {
     private var shakeEnabled by mutableStateOf(false)
     private var cameraGranted by mutableStateOf(false)
+    private var isTorchOn by mutableStateOf(false)
+    private var flashCameraId: String? = null
+    private lateinit var cameraManager: CameraManager
     private var pendingEnable = false
+
+    private val torchCallback = object : CameraManager.TorchCallback() {
+        override fun onTorchModeChanged(cameraId: String, enabled: Boolean) {
+            if (cameraId == flashCameraId) {
+                isTorchOn = enabled
+            }
+        }
+    }
 
     private val permissionRequest = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
         val cameraOk = results[Manifest.permission.CAMERA] == true || hasPermission(Manifest.permission.CAMERA)
@@ -47,10 +60,18 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         cameraGranted = hasPermission(Manifest.permission.CAMERA)
         shakeEnabled = accessibilityServiceEnabled()
+
+        cameraManager = getSystemService(CAMERA_SERVICE) as CameraManager
+        flashCameraId = cameraManager.cameraIdList.firstOrNull { id ->
+            runCatching { cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true }.getOrDefault(false)
+        }
+        cameraManager.registerTorchCallback(mainExecutor, torchCallback)
+
         setContent {
             ShakeTheme {
                 ShakeScreen(
                     enabled = shakeEnabled,
+                    isTorchOn = isTorchOn,
                     cameraGranted = cameraGranted,
                     hasFlash = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH) &&
                         packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER),
@@ -66,9 +87,19 @@ class MainActivity : ComponentActivity() {
         shakeEnabled = accessibilityServiceEnabled()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        runCatching { cameraManager.unregisterTorchCallback(torchCallback) }
+    }
+
     private fun hasPermission(permission: String) = ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
 
     private fun onToggleShake(enabled: Boolean) {
+        if (isTorchOn) {
+            flashCameraId?.let { id -> runCatching { cameraManager.setTorchMode(id, false) } }
+            return
+        }
+
         if (enabled) {
             if (!hasPermission(Manifest.permission.CAMERA)) {
                 pendingEnable = true
@@ -106,11 +137,19 @@ private fun ShakeTheme(content: @Composable () -> Unit) {
 @Composable
 private fun ShakeScreen(
     enabled: Boolean,
+    isTorchOn: Boolean,
     cameraGranted: Boolean,
     hasFlash: Boolean,
     onToggle: (Boolean) -> Unit
 ) {
-    val bg by animateColorAsState(if (enabled) Color(0xFFF3EEFF) else Color(0xFFF8F6FC), label = "background")
+    val bg by animateColorAsState(
+        when {
+            isTorchOn -> Color(0xFFF0E7FF)
+            enabled -> Color(0xFFF3EEFF)
+            else -> Color(0xFFF8F6FC)
+        },
+        label = "background"
+    )
     Surface(Modifier.fillMaxSize(), color = bg) {
         Column(
             Modifier
@@ -148,22 +187,46 @@ private fun ShakeScreen(
                 Modifier
                     .size(184.dp)
                     .clip(CircleShape)
-                    .background(if (enabled) Color(0xFFEADDFF) else Color(0xFFEEEAF2)),
+                    .background(
+                        when {
+                            isTorchOn -> Color(0xFFE0D0FF)
+                            enabled -> Color(0xFFEADDFF)
+                            else -> Color(0xFFEEEAF2)
+                        }
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
                     Modifier
                         .size(132.dp)
                         .clip(CircleShape)
-                        .background(if (enabled) Color(0xFF6750A4) else Color(0xFF625B71)),
+                        .background(
+                            when {
+                                isTorchOn -> Color(0xFF5B3E96)
+                                enabled -> Color(0xFF6750A4)
+                                else -> Color(0xFF625B71)
+                            }
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(if (enabled) "✦" else "☼", fontSize = 58.sp, color = Color.White)
+                    Text(
+                        text = when {
+                            isTorchOn -> "💡"
+                            enabled -> "✦"
+                            else -> "☼"
+                        },
+                        fontSize = if (isTorchOn) 54.sp else 58.sp,
+                        color = Color.White
+                    )
                 }
             }
             Spacer(Modifier.height(28.dp))
             Text(
-                if (enabled) "Ready when you are" else "Light up in a shake",
+                text = when {
+                    isTorchOn -> "Torch Activated"
+                    enabled -> "Ready when you are"
+                    else -> "Light up in a shake"
+                },
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center
@@ -173,6 +236,7 @@ private fun ShakeScreen(
                 text = when {
                     !hasFlash -> "This device needs an accelerometer and a camera flash."
                     !cameraGranted -> "Camera access is needed before you can grant shake detection permission."
+                    isTorchOn -> "Motion detected! Device flashlight is currently switched ON."
                     enabled -> "Shake your phone to switch the flashlight on or off. Shake detection is active."
                     else -> "Enable shake control, then turn on its service in Android Accessibility settings."
                 },
@@ -192,6 +256,7 @@ private fun ShakeScreen(
             ) {
                 val label = when {
                     !cameraGranted -> stringResource(R.string.grant_camera_permission)
+                    isTorchOn -> "Shake again to turn off"
                     !enabled -> stringResource(R.string.grant_accessibility_permission)
                     else -> stringResource(R.string.manage_accessibility_permission)
                 }
