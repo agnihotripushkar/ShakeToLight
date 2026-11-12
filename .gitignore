@@ -7,20 +7,30 @@ local.properties
 
 # Log/OS Files
 *.log
+*.hprof
 
 # Android Studio generated files and folders
 captures/
 .externalNativeBuild/
 .cxx/
-*.apk
-output.json
-
-# IntelliJ
-*.iml
 .idea/
+*.iml
 misc.xml
 deploymentTargetDropDown.xml
 render.experimental.xml
+
+# Android specific generated files
+*.apk
+*.ap_
+*.dex
+*.class
+*.jar
+*.aar
+*.so
+*.zip
+*.jar
+*.war
+*.ear
 
 # Keystore files
 *.jks
@@ -29,5 +39,17 @@ render.experimental.xml
 # Google Services (e.g. APIs or Firebase)
 google-services.json
 
-# Android Profiling
+# Android profiling files
 *.hprof
+
+# macOS Finder files
+.DS_Store
+
+# VS Code settings (optional)
+.vscode/
+
+# Other generated resources
+**/out/
+**/.gradle/
+**/.cxx/
+**/.externalNativeBuild/

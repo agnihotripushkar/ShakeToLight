@@ -9,6 +9,8 @@
     <application
         android:allowBackup="true"
         android:label="Shake to Light"
+         android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/Theme.QuickFlash"
         android:supportsRtl="true">
         <activity
