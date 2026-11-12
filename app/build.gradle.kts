@@ -15,7 +15,9 @@ android {
         versionName = "1.0"
     }
 
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

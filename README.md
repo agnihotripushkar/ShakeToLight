@@ -9,6 +9,7 @@
 ## Table of Contents
 - [Features](#features)
 - [Screenshots](#screenshots)
+- [Branches & Background Execution](#branches--background-execution)
 - [Installation](#installation)
 - [Build & Run Locally](#build--run-locally)
 - [Usage](#usage)
@@ -17,10 +18,24 @@
 - [License](#license)
 
 ## Features
+- **Shake detection** – uses the accelerometer to detect a brisk shake.
+- **Camera flash control** – toggles the flashlight on/off instantly.
+- **Adaptive icon** – modern squircle icon that works on all Android launchers.
+- **No foreground notification** – implements the feature through an `AccessibilityService` for a clean UI experience.
+
+## Screenshots
+
+![ShakeToLight App Showcase](screenshots/showcase.png)
+
+<p align="center">
+  <img src="screenshots/playstore_1.png" width="30%" alt="Shake to light" />
+  <img src="screenshots/playstore_2.png" width="30%" alt="Toggle flashlight" />
+  <img src="screenshots/playstore_3.png" width="30%" alt="Zero notifications" />
+</p>
 
 ## Branches & Background Execution
 
-The repository contains two build flavors that handle background execution differently:
+The repository contains two approaches for background execution:
 
 - **`main` (Play) flavor** – the original implementation uses a foreground `Service` (`ShakeTorchService`) with an ongoing notification to keep the shake detection active while the app is in the background. This complies with Google Play policies for background work but shows a persistent notification.
 - **`sideload` (Accessibility) flavor** – introduced to **bypass the foreground‑service requirement**. It replaces the foreground service with an `AccessibilityService` (`ShakeAccessibilityService`) that runs in the background without a visible notification. The service only listens to accelerometer events and does **not** read accessibility events or window content, making it suitable for sideloaded testing or non‑Play‑store distribution.
@@ -29,21 +44,12 @@ The repository contains two build flavors that handle background execution diffe
 
 | Change | Description |
 |--------|-------------|
-| **Removed** `ShakeTorchService` and its foreground‑service declaration from the manifest. | - |
-| **Added** `ShakeAccessibilityService` with `android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"` and an `intent‑filter` for `android.accessibilityservice.AccessibilityService`. | - |
-| **Deleted** the `play` flavor’s `applicationIdSuffix` (`.sideload`) and related build‑flavor configuration, consolidating the app into a single `main` module. | - |
-| **Updated** UI logic in `MainActivity` to check `BuildConfig.FLAVOR == "sideload"` and to guide the user to enable the accessibility service instead of starting the foreground service. | - |
-| **Adjusted** `README.md` to reflect the new approach and explain how to enable the accessibility service on the device (Settings → Accessibility). | - |
+| **Removed** `ShakeTorchService` and its foreground‑service declaration from the manifest. | Eliminates persistent foreground notification. |
+| **Added** `ShakeAccessibilityService` with `BIND_ACCESSIBILITY_SERVICE` permission. | Enables background accelerometer sensing via accessibility API. |
+| **Consolidated** flavors into single `main` module. | Clean, unified build target without redundant flavor suffixes. |
+| **Updated** `MainActivity` & permissions flow. | Guides user directly to enable accessibility service. |
 
-The **`sideload`** flavor is now merged into the default `main` branch, so the repository builds a single APK that uses the accessibility‑service method by default. If you need the original foreground‑service behavior, you can create a `play` flavor by restoring the previous `productFlavors` configuration in `app/build.gradle.kts`.
-- **Shake detection** – uses the accelerometer to detect a brisk shake.
-- **Camera flash control** – toggles the flashlight on/off instantly.
-- **Adaptive icon** – modern squircle icon that works on all Android launchers.
-- **No foreground notification** – implements the feature through an `AccessibilityService` for a clean UI experience.
-
-## Screenshots
-<!-- Add screenshots of the app UI here -->
-![App UI](screenshot.png)
+The accessibility‑service method is now merged into the default `main` branch, building a single APK that uses this clean background approach by default.
 
 ## Installation
 You can install the latest release from the **GitHub Releases** page:
@@ -58,7 +64,6 @@ You can install the latest release from the **GitHub Releases** page:
 git clone https://github.com/pushkaragnihotri/ShakeToLight.git
 cd ShakeToLight
 
-# Ensure Android SDK is available (local.properties will be created automatically)
 # Build the debug APK
 ./gradlew assembleDebug
 

@@ -2,12 +2,11 @@
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
     <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="false" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
         android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="Shake to Light"
          android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -21,22 +20,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".QuickSettingsCommandActivity" android:exported="false" android:excludeFromRecents="true" android:taskAffinity="" android:theme="@style/Theme.QuickFlash.Command" />
-        <service android:name=".ShakeTorchService" android:exported="false" android:foregroundServiceType="specialUse">
-            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Listens for device shakes to toggle the flashlight while enabled by the user" />
-        </service>
         <service
-            android:name=".FlashlightQuickSettingsTile"
+            android:name=".ShakeAccessibilityService"
             android:exported="true"
-            android:icon="@drawable/ic_shake"
-            android:label="@string/tile_name"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            android:label="Shake detection"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE" />
+                <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
             <meta-data
-                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
-                android:value="true" />
+                android:name="android.accessibilityservice"
+                android:resource="@xml/shake_accessibility_service" />
         </service>
     </application>
 </manifest>
