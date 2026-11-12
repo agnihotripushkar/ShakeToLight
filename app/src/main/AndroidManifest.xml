@@ -19,22 +19,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".QuickSettingsCommandActivity" android:exported="false" android:excludeFromRecents="true" android:taskAffinity="" android:theme="@style/Theme.QuickFlash.Command" />
         <service android:name=".ShakeTorchService" android:exported="false" android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Listens for device shakes to toggle the flashlight while enabled by the user" />
-        </service>
-        <service
-            android:name=".FlashlightQuickSettingsTile"
-            android:exported="true"
-            android:icon="@drawable/ic_shake"
-            android:label="@string/tile_name"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
-                android:value="true" />
         </service>
     </application>
 </manifest>

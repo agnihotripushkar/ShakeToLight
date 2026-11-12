@@ -15,7 +15,20 @@ android {
         versionName = "1.0"
     }
 
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("play") { dimension = "distribution" }
+        create("sideload") {
+            dimension = "distribution"
+            applicationIdSuffix = ".sideload"
+            versionNameSuffix = "-sideload"
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
